@@ -1,0 +1,37 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Exclude all .tfvars files, which typically contain sensitive data, such as 
+# passwords, private keys, and other secrets.
+*.tfvars
+
+# Terraform plan output files
+*.tfplan
+
+# Sensitive provider override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Include Terraform lock file only if you don't want to commit it
+# If you're working in a team and want to share the same plugin versions, remove the following line
+.terraform.lock.hcl
+
+# Ignore backup files created by Terraform
+*.backup
+
+# Ignore editor specific files
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+*.log
