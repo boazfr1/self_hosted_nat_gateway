@@ -21,35 +21,31 @@ resource "aws_instance" "nat_instance" {
   }
 
   user_data = <<-EOF
-                #!/bin/bash
-                sudo yum install iptables-services -y
-                sudo systemctl enable iptables
-                sudo systemctl start iptables
+                    #!/bin/bash
+                    sudo yum update -y
+                    sudo yum install iptables-services -y
+                    sudo systemctl enable iptables
+                    sudo systemctl start iptables
 
-                # Enable IP forwarding
-                echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/custom-ip-forwarding.conf
-                sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
+                    # Enable IP forwarding
+                    echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/custom-ip-forwarding.conf
+                    sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
 
-                # Identify the primary network interface
-                PRIMARY_INTERFACE=$(netstat -i | grep -E '^(eth0|en[sx][0-9]|ens[0-9])' | awk '{print $1}' | head -n1)
+                    # Identify the primary network interface
+                    PRIMARY_INTERFACE=$(ip route | grep default | awk '{print $5}')
 
-                # Configure NAT
-                sudo /sbin/iptables -t nat -A POSTROUTING -o $PRIMARY_INTERFACE -j MASQUERADE
-                sudo /sbin/iptables -F FORWARD
+                    # Configure NAT
+                    sudo /sbin/iptables -t nat -A POSTROUTING -o $PRIMARY_INTERFACE -j MASQUERADE
+                    sudo /sbin/iptables -A FORWARD -i $PRIMARY_INTERFACE -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+                    sudo /sbin/iptables -A FORWARD -i eth0 -o $PRIMARY_INTERFACE -j ACCEPT
 
-                # Save iptables rules
-                if command -v iptables-save >/dev/null 2>&1; then
-                    sudo iptables-save | sudo tee /etc/iptables/rules.v4
-                elif [ -f /etc/sysconfig/iptables ]; then
+                    # Save iptables rules
                     sudo service iptables save
-                else
-                    echo "iptables-save not found and /etc/sysconfig/iptables does not exist. Rules not saved persistently."
-                fi
 
-                # Ensure iptables rules are applied on boot
-                echo '#!/bin/bash' | sudo tee /etc/network/if-pre-up.d/iptables
-                echo 'iptables-restore < /etc/iptables/rules.v4' | sudo tee -a /etc/network/if-pre-up.d/iptables
-                sudo chmod +x /etc/network/if-pre-up.d/iptables
+                    # Ensure iptables rules are applied on boot
+                    echo '#!/bin/bash' | sudo tee /etc/network/if-pre-up.d/iptables
+                    echo 'iptables-restore < /etc/sysconfig/iptables' | sudo tee -a /etc/network/if-pre-up.d/iptables
+                    sudo chmod +x /etc/network/if-pre-up.d/iptables
                 EOF
 
   tags = {

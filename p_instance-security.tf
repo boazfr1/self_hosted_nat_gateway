@@ -23,5 +23,5 @@ resource "aws_security_group_rule" "private_to_nat_egress" {
   to_port           = 0
   protocol          = "-1"  # -1 means all protocols
   security_group_id = aws_security_group.private_instance_sg.id
-  cidr_blocks       = [aws_vpc.testing_vpc.cidr_block]  # Allows traffic to the entire VPC
+  cidr_blocks       = ["0.0.0.0/0"]  # Allows traffic to anywhere
 }
