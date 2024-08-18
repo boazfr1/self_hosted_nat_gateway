@@ -5,16 +5,10 @@ resource "aws_instance" "nat_instance" {
   key_name          = data.aws_key_pair.nat.key_name
 
 
-  #   subnet_id              = aws_subnet.public_subnet.id
-  #   vpc_security_group_ids = [aws_security_group.nat_instance_sg.id]
-
   network_interface {
     network_interface_id = aws_network_interface.nat_instance_interface.id
     device_index         = 0
   }
-
-  #   source_dest_check = false
-
 
   provisioner "local-exec" {
     command = "aws ec2 modify-instance-attribute --instance-id ${self.id} --no-source-dest-check"
